@@ -2,6 +2,7 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -28,6 +29,18 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+#### How to run as extension?
+
+Chrome extension requires js bundle to be functional. For this you need to select ./build folder from the chrome. Follow these simple steps
+1. First open chrome://extensions/
+2. Enable Developer mode on the right top cornor
+3. Click `Load unpacked`
+4. Select build folder
+5. Pin the new extension
+6. Click on the extension 
+
+For changes you just need to change code and run `npm run build` and reclick on the extension button. It should reflect the new changes 
 
 ### `npm run eject`
 
