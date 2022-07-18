@@ -30,7 +30,7 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-#### `How to run as extension?`
+#### `How to run as chrome extension?`
 
 Chrome extension requires js bundle to be functional. For this you need to select ./build folder from the chrome. Follow these simple steps
 1. First open chrome://extensions/
