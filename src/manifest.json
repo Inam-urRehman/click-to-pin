@@ -25,7 +25,8 @@
   "permissions": [
     "contextMenus",
     "tabs",
-    "storage"
+    "storage",
+    "notifications"
   ],
   "host_permissions": [
     "http://*/*",

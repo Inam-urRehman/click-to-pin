@@ -1,4 +1,4 @@
-import { OAuthScopeEnum, Client, PinsController, MediaSourceFile, NewPinRequest, ApiError } from "pinterest-apilib";
+import { OAuthScopeEnum, Client, PinsController, MediaSourceFile, NewPinRequest, ApiError, BoardsController } from "pinterest-apilib";
 // Custom adapter for axios
 import fetchAdapter from '@vespaiach/axios-fetch-adapter';
 
@@ -7,7 +7,7 @@ export class APIClient {
 
   client: Client;
 
-  static getInstance(oAuthClientId = '1479682', oAuthClientSecret = '135695e829a511b80a3f5fff2dabeb51d85a1fc5', oAuthRedirectUri = 'http://localhost:3000/') {
+  static getInstance(oAuthClientId = '1479682', oAuthClientSecret = '135695e829a511b80a3f5fff2dabeb51d85a1fc5', oAuthRedirectUri = 'https://developers.pinterest.com/') {
     if (!APIClient.instance) {
       APIClient.instance = new APIClient(oAuthClientId, oAuthClientSecret, oAuthRedirectUri)
     }
@@ -72,6 +72,11 @@ export class APIClient {
         console.log(error.result);
       }
     }
+  }
+
+  async getBoards() {
+    const boardsController = new BoardsController(this.client);
+    return boardsController.getAllBoards()
   }
 
 }

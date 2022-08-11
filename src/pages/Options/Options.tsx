@@ -1,31 +1,46 @@
-import React from 'react';
-import { Button, Form, Input, Typography } from 'antd';
+import React, { useCallback, useEffect } from 'react';
+import { Button, Divider, Form, Input, Typography } from 'antd';
 import './Options.css';
 
 interface Props {
   title: string;
 }
 
-const Options: React.FC<Props> = ({ title }: Props) => {
+const Options: React.FC<Props> = () => {
+  const [form] = Form.useForm()
   const onFinish = (values: any) => {
-    console.log('Success:', values);
+    chrome.storage.sync.set(values);
+    alert("Values saved")
   };
 
   const onFinishFailed = (errorInfo: any) => {
-    console.log('Failed:', errorInfo);
+    alert('Failed:' + errorInfo);
   };
+
+  const onClear = useCallback(() => {
+    chrome.storage.sync.remove([...Object.keys(form.getFieldsValue()), "authToken"]).then(() => {
+      form.resetFields();
+    })
+  }, [form])
+
+
+  useEffect(() => {
+    chrome.storage.sync.get(["oAuthClientId", "oAuthClientSecret", "oAuthRedirectUri"], (values) => {
+      form.setFieldsValue(values);
+    })
+  }, [form])
+
 
   return <div className="OptionsContainer">
     <Typography.Title level={2}>Credentials</Typography.Title>
     <Form
+      form={form}
       className='options-form'
       name="basic"
       labelCol={{ span: 8 }}
       wrapperCol={{ span: 16 }}
-      initialValues={{ remember: true }}
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
-      autoComplete="off"
     >
       <Form.Item
         label="oAuthClientId"
@@ -57,6 +72,8 @@ const Options: React.FC<Props> = ({ title }: Props) => {
         </Button>
       </Form.Item>
     </Form>
+    <Divider />
+    <Button type='primary' onClick={onClear}>Clear credentials</Button>
   </div>;
 };
 

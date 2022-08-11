@@ -1,9 +1,7 @@
-import React from 'react';
-import { useCallback } from 'react';
-import { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { APIClient } from '../../utils/api-client';
 
-const REDIRECT_URL = "http://localhost:3000/?code=";
+const REDIRECT_URL = "https://developers.pinterest.com/?code=";
 
 function GreetingComponent() {
   const [authCode, setAuthCode] = useState();
@@ -16,7 +14,8 @@ function GreetingComponent() {
   });
 
   const onSave = useCallback(async () => {
-    const apiClient = APIClient.getInstance();
+    const { oAuthClientId, oAuthClientSecret, oAuthRedirectUri } = await chrome.storage.sync.get(["oAuthClientId", "oAuthClientSecret", "oAuthRedirectUri"]);
+    const apiClient = APIClient.getInstance(oAuthClientId, oAuthClientSecret, oAuthRedirectUri);
     try {
       const authToken = await apiClient.getAuthToken(authCode)
       await chrome.storage.sync.set({ authToken });
