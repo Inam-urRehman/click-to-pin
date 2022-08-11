@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Form, Input } from 'antd';
+import { Button, Form, Input, Typography } from 'antd';
 import './Options.css';
 
 interface Props {
@@ -16,7 +16,9 @@ const Options: React.FC<Props> = ({ title }: Props) => {
   };
 
   return <div className="OptionsContainer">
+    <Typography.Title level={2}>Credentials</Typography.Title>
     <Form
+      className='options-form'
       name="basic"
       labelCol={{ span: 8 }}
       wrapperCol={{ span: 16 }}
