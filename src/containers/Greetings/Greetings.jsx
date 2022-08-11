@@ -28,11 +28,16 @@ function GreetingComponent() {
 
   return (
     <div>
-      {authCode && <div>
-        <label>Auth Code</label>
-        <input value={authCode} disabled />
-        <button onClick={onSave}>Click to save</button>
-      </div>}
+      {authCode ? (
+        <div>
+          <label>Auth Code</label>
+          <input value={authCode} disabled />
+          <button onClick={onSave}>Click to save</button>
+        </div>
+      )
+        : (
+          <p>Click on any image and select click-to-pin from menu to pin your image</p>
+        )}
     </div>
   );
 }

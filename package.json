@@ -15,6 +15,7 @@
   "dependencies": {
     "@hot-loader/react-dom": "^17.0.2",
     "@vespaiach/axios-fetch-adapter": "^0.3.0",
+    "antd": "^4.22.4",
     "axios": "^0.27.2",
     "buffer": "^6.0.3",
     "pinterest-apilib": "^1.0.4",
