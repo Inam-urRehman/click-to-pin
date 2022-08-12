@@ -1,5 +1,7 @@
 import React, { useCallback, useEffect } from 'react';
 import { Button, Divider, Form, Input, Typography } from 'antd';
+import { CopyFilled } from "@ant-design/icons";
+import copy from 'copy-to-clipboard';
 import './Options.css';
 
 interface Props {
@@ -8,7 +10,7 @@ interface Props {
 
 const Options: React.FC<Props> = () => {
   const [form] = Form.useForm()
-  const onFinish = (values: any) => {
+  const onFinish = ({ authToken, ...values }: any) => {
     chrome.storage.sync.set(values);
     alert("Values saved")
   };
@@ -18,15 +20,15 @@ const Options: React.FC<Props> = () => {
   };
 
   const onClear = useCallback(() => {
-    chrome.storage.sync.remove([...Object.keys(form.getFieldsValue()), "authToken"]).then(() => {
+    chrome.storage.sync.remove(Object.keys(form.getFieldsValue())).then(() => {
       form.resetFields();
     })
   }, [form])
 
 
   useEffect(() => {
-    chrome.storage.sync.get(["oAuthClientId", "oAuthClientSecret", "oAuthRedirectUri"], (values) => {
-      form.setFieldsValue(values);
+    chrome.storage.sync.get(["oAuthClientId", "oAuthClientSecret", "oAuthRedirectUri", "authToken", "boardId"], ({ authToken, ...values }) => {
+      form.setFieldsValue({ ...values, authToken: authToken.accessToken });
     })
   }, [form])
 
@@ -71,9 +73,31 @@ const Options: React.FC<Props> = () => {
           Save
         </Button>
       </Form.Item>
+
+      <Divider />
+      <Form.Item
+        name="authToken"
+        label="Auth Token"
+      >
+        <Input readOnly prefix={
+          <CopyFilled onClick={() => copy(form.getFieldValue("authToken"))} />
+        } />
+      </Form.Item>
+      <Divider />
+      <Form.Item
+        name="boardId"
+        label="Board Id - manual step"
+      >
+        <Input />
+      </Form.Item>
+      <Divider />
+      <Form.Item
+        label="Remove all credentials"
+      >
+        <Button type='primary' danger onClick={onClear} >Clear credentials</Button>
+      </Form.Item>
+
     </Form>
-    <Divider />
-    <Button type='primary' onClick={onClear}>Clear credentials</Button>
   </div>;
 };
 

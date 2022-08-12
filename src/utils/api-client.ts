@@ -49,7 +49,7 @@ export class APIClient {
     return this.client.authorizationCodeAuthManager.fetchToken(authCode)
   }
 
-  async pinImage(imageUrl: string, onSuccess?: VoidFunction, onFailure?: (ex: any) => void) {
+  async pinImage(imageUrl: string, boardId: string, onSuccess?: VoidFunction, onFailure?: (ex: any) => void) {
     const pinsController = new PinsController(this.client);
     const bodyMediaSource: MediaSourceFile = {
       sourceType: 'image_url',
@@ -57,7 +57,7 @@ export class APIClient {
     };
 
     const body: NewPinRequest = {
-      boardId: '935130378816289405',
+      boardId,
       mediaSource: bodyMediaSource,
     };
 

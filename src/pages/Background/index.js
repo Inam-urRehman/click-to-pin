@@ -1,28 +1,6 @@
 import { APIClient } from "../../utils/api-client"
+import { getCodeUrl } from "../../utils"
 import "regenerator-runtime/runtime.js";
-
-// (async function initialization() {
-//   const { authToken, oAuthClientId, oAuthClientSecret, oAuthRedirectUri } = await chrome.storage.sync.get(["authToken", "oAuthClientId", "oAuthClientSecret", "oAuthRedirectUri"]);
-//   let title = ""
-//   if (!oAuthClientId || !oAuthClientSecret || !oAuthRedirectUri) {
-//     title = "Add credentials"
-//   }
-//   else if (!authToken) {
-//     title = "Get token"
-//   } else {
-//     const apiClient = APIClient.getInstance(oAuthClientId, oAuthClientSecret, oAuthRedirectUri);
-//     apiClient.setClient(apiClient.getClient().withConfiguration({
-//       oAuthToken: authToken
-//     }))
-//     const boards = await apiClient.getBoards();
-//     console.log("boards.result.items", boards.result.items)
-//   }
-//   chrome.contextMenus.create({
-//     id: "click-to-pin",
-//     title,
-//     contexts: ["image"]
-//   })
-// })()
 
 chrome.contextMenus.create({
   id: "click-to-pin",
@@ -38,13 +16,40 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 })
 
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  const { oAuthRedirectUri } = await chrome.storage.sync.get(["oAuthRedirectUri"]);
+  const codeUrl = getCodeUrl(oAuthRedirectUri);
+
+  if (tab.url.includes(codeUrl) && changeInfo.status === "complete") {
+    const { oAuthClientId, oAuthClientSecret, oAuthRedirectUri } = await chrome.storage.sync.get(["oAuthClientId", "oAuthClientSecret", "oAuthRedirectUri"]);
+    const apiClient = APIClient.getInstance(oAuthClientId, oAuthClientSecret, oAuthRedirectUri);
+    const authCode = tab.url.replace(codeUrl, "");
+    try {
+      const authToken = await apiClient.getAuthToken(authCode)
+      await chrome.storage.sync.set({ authToken });
+      chrome.tabs.remove(tabId)
+    } catch (ex) {
+      console.log("Something wrong in token fetching", ex)
+    }
+  }
+})
 
 async function pinImage(imageUrl) {
-  const { authToken, oAuthClientId, oAuthClientSecret, oAuthRedirectUri } = await chrome.storage.sync.get(["authToken", "oAuthClientId", "oAuthClientSecret", "oAuthRedirectUri"]);
+  const { authToken, oAuthClientId, oAuthClientSecret, oAuthRedirectUri, boardId } = await chrome.storage.sync.get(["authToken", "oAuthClientId", "oAuthClientSecret", "oAuthRedirectUri", "boardId"]);
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
   if (!oAuthClientId || !oAuthClientSecret || !oAuthRedirectUri) {
-    const selfInfo = await chrome.management.getSelf()
-    chrome.tabs.create({ url: selfInfo.optionsUrl });
+    const selfInfo = await chrome.management.getSelf();
+    chrome.windows.create(
+      {
+        tabId: tab.id,
+        focused: true,
+        width: 700,
+        height: 700,
+        type: "popup",
+        url: selfInfo.optionsUrl,
+      }
+    );
     return;
   }
 
@@ -61,7 +66,17 @@ async function pinImage(imageUrl) {
 
   const onFailure = ex => {
     if (ex?.message?.includes("OAuth token is expired")) {
-      chrome.tabs.create({ url: apiClient.getPermissionUrl() });
+      chrome.windows.create(
+        {
+          tabId: tab.id,
+          focused: true,
+          width: 700,
+          height: 700,
+          type: "popup",
+          url: apiClient.getPermissionUrl(),
+        }
+      );
+      // chrome.tabs.create({ url: apiClient.getPermissionUrl() });
     }
     chrome.notifications.create({
       type: 'basic',
@@ -73,11 +88,21 @@ async function pinImage(imageUrl) {
   }
 
   if (!authToken) {
-    chrome.tabs.create({ url: apiClient.getPermissionUrl() });
+    chrome.windows.create(
+      {
+        tabId: tab.id,
+        focused: true,
+        width: 700,
+        height: 700,
+        type: "popup",
+        url: apiClient.getPermissionUrl(),
+      }
+    );
+    // chrome.tabs.create({ url: apiClient.getPermissionUrl() });
   } else {
     apiClient.setClient(apiClient.getClient().withConfiguration({
       oAuthToken: authToken
     }))
-    apiClient.pinImage(imageUrl, onSuccess, onFailure)
+    apiClient.pinImage(imageUrl, boardId, onSuccess, onFailure)
   }
 }
